@@ -3,6 +3,7 @@ import Navbar from './components/Navbar';
 import Discover from './components/Discover';
 import Map from './components/Map';
 import AddSpot from './components/AddSpot';
+import Profile from './components/Profile';
 import { INITIAL_VENDORS } from './constants';
 import { Vendor, Tab, Review } from './types';
 import DetailModal from './components/DetailModal';
@@ -11,6 +12,8 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>('discover');
   const [vendors, setVendors] = useState<Vendor[]>(INITIAL_VENDORS);
   const [selectedVendorId, setSelectedVendorId] = useState<string | null>(null);
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const handleAddVendor = (newVendor: Vendor) => {
     setVendors(prev => [newVendor, ...prev]);
@@ -23,6 +26,12 @@ const App: React.FC = () => {
 
   const handleCloseModal = () => {
     setSelectedVendorId(null);
+  };
+
+  const handleToggleFavorite = (id: string) => {
+    setFavorites(prev => 
+      prev.includes(id) ? prev.filter(fav => fav !== id) : [...prev, id]
+    );
   };
 
   const handleAddReview = (vendorId: string, review: Review) => {
@@ -50,12 +59,18 @@ const App: React.FC = () => {
         
         {/* Header */}
         <header className="px-6 pt-6 pb-2 flex justify-between items-center z-20 bg-white shrink-0">
-            <h1 className="text-3xl font-bold tracking-tight">
+            <h1 
+              className="text-3xl font-bold tracking-tight cursor-pointer select-none active:scale-95 transition-transform"
+              onClick={() => setActiveTab('discover')}
+            >
               tiny<span className="text-neo-orange">spots</span>.
             </h1>
-            <div className="w-10 h-10 bg-neo-teal border-2 border-neo-black rounded-full shadow-hard-sm flex items-center justify-center">
-               <span className="font-bold">TS</span>
-            </div>
+            <button 
+              onClick={() => setIsProfileOpen(true)}
+              className="w-10 h-10 bg-neo-teal border-2 border-neo-black rounded-full shadow-hard-sm flex items-center justify-center overflow-hidden hover:scale-105 active:shadow-none active:translate-y-[2px] transition-all"
+            >
+               <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Profile" className="w-full h-full" />
+            </button>
         </header>
 
         {/* Main Content Area - flex-1 and scrollable */}
@@ -63,7 +78,9 @@ const App: React.FC = () => {
           {activeTab === 'discover' && (
             <Discover 
               vendors={vendors} 
-              onSelectVendor={handleSelectVendor} 
+              onSelectVendor={handleSelectVendor}
+              favorites={favorites}
+              onToggleFavorite={handleToggleFavorite}
             />
           )}
           {activeTab === 'map' && (
@@ -81,6 +98,16 @@ const App: React.FC = () => {
         <div className="p-4 pb-6 z-20 bg-white border-t-2 border-neo-black/10 shrink-0">
             <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
         </div>
+
+        {/* Profile Overlay */}
+        {isProfileOpen && (
+          <Profile 
+            onClose={() => setIsProfileOpen(false)} 
+            favorites={favorites}
+            vendors={vendors}
+            onSelectVendor={handleSelectVendor}
+          />
+        )}
 
         {/* Detail Modal */}
         {selectedVendor && (

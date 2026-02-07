@@ -12,8 +12,8 @@ export const INITIAL_VENDORS: Vendor[] = [
     address: "Corner of 4th St & Main",
     timings: "Mon-Sat: 6am - 8pm",
     reviews: [
-      { id: 'r1', user: 'Anya', avatar: 'https://i.pravatar.cc/150?u=a', comment: 'Spicy and perfect!', rating: 5 },
-      { id: 'r2', user: 'Dev', avatar: 'https://i.pravatar.cc/150?u=b', comment: 'Crowded but worth it.', rating: 4 }
+      { id: 'r1', user: 'Anya', avatar: 'https://i.pravatar.cc/150?u=a', comment: 'Spicy and perfect!', rating: 5, date: '2 days ago' },
+      { id: 'r2', user: 'Dev', avatar: 'https://i.pravatar.cc/150?u=b', comment: 'Crowded but worth it.', rating: 4, date: '1 week ago' }
     ]
   },
   {
@@ -27,7 +27,7 @@ export const INITIAL_VENDORS: Vendor[] = [
     address: "Under the Banyan Tree, Park Lane",
     timings: "Wed-Sun: 10am - 5pm",
     reviews: [
-      { id: 'r3', user: 'Liam', avatar: 'https://i.pravatar.cc/150?u=c', comment: 'So cozy.', rating: 5 }
+      { id: 'r3', user: 'Liam', avatar: 'https://i.pravatar.cc/150?u=c', comment: 'So cozy.', rating: 5, date: '3 days ago' }
     ]
   },
   {
@@ -41,8 +41,8 @@ export const INITIAL_VENDORS: Vendor[] = [
     address: "Night Market Alley, Stall 42",
     timings: "Daily: 10pm - 4am",
     reviews: [
-      { id: 'r4', user: 'Sara', avatar: 'https://i.pravatar.cc/150?u=d', comment: 'Life changing tacos.', rating: 5 },
-      { id: 'r5', user: 'Mike', avatar: 'https://i.pravatar.cc/150?u=e', comment: 'A bit too spicy for me.', rating: 4 }
+      { id: 'r4', user: 'Sara', avatar: 'https://i.pravatar.cc/150?u=d', comment: 'Life changing tacos.', rating: 5, date: 'Yesterday' },
+      { id: 'r5', user: 'Mike', avatar: 'https://i.pravatar.cc/150?u=e', comment: 'A bit too spicy for me.', rating: 4, date: '1 month ago' }
     ]
   },
   {
@@ -56,7 +56,7 @@ export const INITIAL_VENDORS: Vendor[] = [
     address: "Behind the Old Cinema",
     timings: "Sat-Sun: 12pm - 8pm",
     reviews: [
-      { id: 'r6', user: 'Zoe', avatar: 'https://i.pravatar.cc/150?u=f', comment: 'Love my new kicks!', rating: 5 }
+      { id: 'r6', user: 'Zoe', avatar: 'https://i.pravatar.cc/150?u=f', comment: 'Love my new kicks!', rating: 5, date: '2 weeks ago' }
     ]
   },
   {
@@ -70,7 +70,7 @@ export const INITIAL_VENDORS: Vendor[] = [
     address: "Financial District Plaza",
     timings: "Mon-Fri: 11am - 3pm",
     reviews: [
-      { id: 'r7', user: 'Ken', avatar: 'https://i.pravatar.cc/150?u=g', comment: 'Softest buns ever.', rating: 5 }
+      { id: 'r7', user: 'Ken', avatar: 'https://i.pravatar.cc/150?u=g', comment: 'Softest buns ever.', rating: 5, date: '5 days ago' }
     ]
   }
 ];

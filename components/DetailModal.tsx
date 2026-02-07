@@ -23,7 +23,8 @@ const DetailModal: React.FC<DetailModalProps> = ({ vendor, onClose, onAddReview 
         user: "You",
         avatar: "https://i.pravatar.cc/150?img=12", // generic avatar
         comment: newReviewText,
-        rating: newReviewRating
+        rating: newReviewRating,
+        date: "Just now"
     };
     
     onAddReview(review);
@@ -120,8 +121,11 @@ const DetailModal: React.FC<DetailModalProps> = ({ vendor, onClose, onAddReview 
                         <div key={review.id} className="bg-gray-50 border-2 border-neo-black rounded-xl p-4 shadow-sm">
                             <div className="flex items-center gap-3 mb-2">
                                 <img src={review.avatar} alt={review.user} className="w-8 h-8 rounded-full border-2 border-neo-black" />
-                                <div>
-                                    <div className="font-bold text-xs">{review.user}</div>
+                                <div className="flex-1">
+                                    <div className="flex justify-between items-center">
+                                        <div className="font-bold text-xs">{review.user}</div>
+                                        <span className="text-[10px] text-gray-400 font-medium">{review.date || 'Recently'}</span>
+                                    </div>
                                     <div className="flex text-neo-orange">
                                         {[...Array(5)].map((_, i) => (
                                             <Star key={i} size={10} fill={i < review.rating ? "currentColor" : "none"} />

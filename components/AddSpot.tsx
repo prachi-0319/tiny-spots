@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Camera, MapPin, Check, Clock } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Camera, MapPin, Check, Clock, Upload } from 'lucide-react';
 import { Vendor, Category } from '../types';
 import { CATEGORY_COLORS } from '../constants';
 
@@ -16,6 +16,7 @@ const AddSpot: React.FC<AddSpotProps> = ({ onAddVendor }) => {
     timings: '',
     imageUrl: ''
   });
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,18 +32,23 @@ const AddSpot: React.FC<AddSpotProps> = ({ onAddVendor }) => {
         rating: 5.0,
         reviews: [],
         imageUrl: formData.imageUrl,
-        // Random coords for the stylized map (0-100 range)
         coordinates: { x: Math.random() * 80 + 10, y: Math.random() * 70 + 15 }
     };
     onAddVendor(newVendor);
   };
 
-  const categories = Object.keys(CATEGORY_COLORS) as Category[];
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+        const url = URL.createObjectURL(e.target.files[0]);
+        setFormData({ ...formData, imageUrl: url });
+    }
+  };
 
-  // Simplified image handling for demo
   const handleFakeUpload = () => {
     setFormData({...formData, imageUrl: `https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&q=80&w=1000&random=${Date.now()}`});
   };
+
+  const categories = Object.keys(CATEGORY_COLORS) as Category[];
 
   return (
     <div className="w-full h-full overflow-y-auto p-6 pb-24">
@@ -127,22 +133,29 @@ const AddSpot: React.FC<AddSpotProps> = ({ onAddVendor }) => {
             />
         </div>
 
-        {/* Photo URL Input (Required) */}
+        {/* Photo Input (Required) */}
         <div className="space-y-2">
-            <label className="font-bold text-lg">Photo URL <span className="text-red-500">*</span></label>
-            <div className="flex gap-2">
+            <label className="font-bold text-lg">Photo <span className="text-red-500">*</span></label>
+            <div className="flex gap-2 items-stretch h-14">
                 <input 
-                    required
-                    type="url" 
-                    value={formData.imageUrl}
-                    onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
-                    placeholder="https://..." 
-                    className="flex-1 p-4 bg-white border-2 border-neo-black rounded-xl shadow-hard focus:outline-none focus:bg-neo-yellow transition-colors font-medium"
+                    type="file" 
+                    ref={fileInputRef}
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
                 />
                 <button 
                     type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex-1 bg-white border-2 border-neo-black rounded-xl shadow-hard hover:bg-gray-50 active:shadow-none active:translate-y-[2px] transition-all flex items-center justify-center gap-2 font-bold"
+                >
+                    <Upload size={20} />
+                    {formData.imageUrl ? "Change Photo" : "Upload Photo"}
+                </button>
+                <button 
+                    type="button"
                     onClick={handleFakeUpload}
-                    className="bg-gray-200 border-2 border-neo-black rounded-xl px-4 font-bold text-xs shadow-hard-sm hover:bg-gray-300"
+                    className="bg-neo-yellow border-2 border-neo-black rounded-xl px-4 font-bold text-xs shadow-hard hover:bg-yellow-300 active:shadow-none active:translate-y-[2px] transition-all"
                 >
                     Gen Random
                 </button>
@@ -151,7 +164,7 @@ const AddSpot: React.FC<AddSpotProps> = ({ onAddVendor }) => {
              {formData.imageUrl && (
                 <div className="mt-2 w-full h-32 rounded-xl border-2 border-neo-black overflow-hidden relative">
                     <img src={formData.imageUrl} alt="Preview" className="w-full h-full object-cover" />
-                    <div className="absolute top-2 right-2 bg-neo-teal text-white text-xs font-bold px-2 py-1 rounded border border-neo-black">Preview</div>
+                    <div className="absolute top-2 right-2 bg-neo-teal text-white text-xs font-bold px-2 py-1 rounded border border-neo-black shadow-sm">Preview</div>
                 </div>
             )}
         </div>

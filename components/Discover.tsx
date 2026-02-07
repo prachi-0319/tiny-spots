@@ -1,17 +1,18 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
-import { Star, MapPin, X, Heart, Info, Filter } from 'lucide-react';
+import { Star, MapPin, Info, Filter, Heart } from 'lucide-react';
 import { Vendor, Category } from '../types';
 import { CATEGORY_COLORS } from '../constants';
 
 interface DiscoverProps {
   vendors: Vendor[];
   onSelectVendor: (id: string) => void;
+  favorites: string[];
+  onToggleFavorite: (id: string) => void;
 }
 
-const Discover: React.FC<DiscoverProps> = ({ vendors, onSelectVendor }) => {
+const Discover: React.FC<DiscoverProps> = ({ vendors, onSelectVendor, favorites, onToggleFavorite }) => {
   const [removedIds, setRemovedIds] = useState<string[]>([]);
-  const [swipedDirection, setSwipedDirection] = useState<'left' | 'right' | null>(null);
   const [activeCategory, setActiveCategory] = useState<Category | 'All'>('All');
 
   // Filter vendors based on category and removed IDs
@@ -23,11 +24,10 @@ const Discover: React.FC<DiscoverProps> = ({ vendors, onSelectVendor }) => {
     });
   }, [vendors, removedIds, activeCategory]);
 
-  const handleSwipe = (direction: 'left' | 'right', id: string) => {
-    setSwipedDirection(direction);
+  const handleSwipe = (id: string) => {
+    // Just a small delay to allow animation to complete
     setTimeout(() => {
         setRemovedIds(prev => [...prev, id]);
-        setSwipedDirection(null);
     }, 200);
   };
 
@@ -95,8 +95,10 @@ const Discover: React.FC<DiscoverProps> = ({ vendors, onSelectVendor }) => {
                      key={vendor.id}
                      vendor={vendor}
                      isTop={isTop}
-                     onSwipe={(dir) => handleSwipe(dir, vendor.id)}
+                     onSwipe={() => handleSwipe(vendor.id)}
                      onSelect={() => onSelectVendor(vendor.id)}
+                     isFavorite={favorites.includes(vendor.id)}
+                     onToggleFavorite={() => onToggleFavorite(vendor.id)}
                      dragConstraints={{ left: -300, right: 300, top: 0, bottom: 0 }}
                    />
                  );
@@ -105,24 +107,6 @@ const Discover: React.FC<DiscoverProps> = ({ vendors, onSelectVendor }) => {
           </div>
         )}
       </div>
-
-      {/* Controls (Visual Only) */}
-      <div className="h-16 shrink-0 flex justify-center gap-8 pointer-events-none pb-2">
-        <div className={`
-             w-14 h-14 bg-white border-2 border-neo-black rounded-full flex items-center justify-center shadow-hard
-             transition-transform duration-200
-             ${swipedDirection === 'left' ? 'scale-125 bg-red-100' : ''}
-        `}>
-             <X size={28} className="text-red-500" />
-        </div>
-        <div className={`
-             w-14 h-14 bg-white border-2 border-neo-black rounded-full flex items-center justify-center shadow-hard
-             transition-transform duration-200
-             ${swipedDirection === 'right' ? 'scale-125 bg-green-100' : ''}
-        `}>
-             <Heart size={28} className="text-green-500 fill-green-500" />
-        </div>
-      </div>
     </div>
   );
 };
@@ -130,24 +114,21 @@ const Discover: React.FC<DiscoverProps> = ({ vendors, onSelectVendor }) => {
 interface CardProps {
   vendor: Vendor;
   isTop: boolean;
-  onSwipe: (dir: 'left' | 'right') => void;
+  onSwipe: () => void;
   onSelect: () => void;
+  isFavorite: boolean;
+  onToggleFavorite: () => void;
   dragConstraints: any;
 }
 
-const Card: React.FC<CardProps> = ({ vendor, isTop, onSwipe, onSelect, dragConstraints }) => {
+const Card: React.FC<CardProps> = ({ vendor, isTop, onSwipe, onSelect, isFavorite, onToggleFavorite, dragConstraints }) => {
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-15, 15]);
   const opacity = useTransform(x, [-200, -150, 0, 150, 200], [0, 1, 1, 1, 0]);
   
-  const leftColor = useTransform(x, [-150, 0], [1, 0]);
-  const rightColor = useTransform(x, [0, 150], [0, 1]);
-
   const handleDragEnd = (event: any, info: any) => {
-    if (info.offset.x > 100) {
-      onSwipe('right');
-    } else if (info.offset.x < -100) {
-      onSwipe('left');
+    if (info.offset.x > 100 || info.offset.x < -100) {
+      onSwipe();
     }
   };
 
@@ -169,13 +150,6 @@ const Card: React.FC<CardProps> = ({ vendor, isTop, onSwipe, onSelect, dragConst
       exit={{ x: x.get() < 0 ? -500 : 500, opacity: 0, transition: { duration: 0.3 } }}
       className="absolute inset-0 bg-white border-2 border-neo-black rounded-3xl shadow-hard overflow-hidden cursor-grab active:cursor-grabbing select-none flex flex-col"
     >
-      {isTop && (
-         <>
-           <motion.div style={{ opacity: rightColor }} className="absolute inset-0 bg-green-400 mix-blend-multiply z-20 pointer-events-none" />
-           <motion.div style={{ opacity: leftColor }} className="absolute inset-0 bg-red-400 mix-blend-multiply z-20 pointer-events-none" />
-         </>
-      )}
-
       {/* Image Section - Flexible height */}
       <div className="flex-[3] w-full relative overflow-hidden min-h-0 bg-gray-100">
         <img 
@@ -190,14 +164,26 @@ const Card: React.FC<CardProps> = ({ vendor, isTop, onSwipe, onSelect, dragConst
         </div>
       </div>
 
-      {/* Content Section - Flexible height with scrollable description */}
+      {/* Content Section */}
       <div className="flex-[2] p-4 flex flex-col justify-between relative bg-white min-h-0">
         <div className="overflow-hidden flex flex-col h-full">
             <div className="flex justify-between items-start mb-1 shrink-0">
                 <h2 className="text-xl font-bold leading-tight mr-2 line-clamp-1">{vendor.name}</h2>
-                <div className="flex items-center gap-1 bg-neo-yellow px-2 py-1 rounded border-2 border-neo-black shadow-hard-sm shrink-0">
-                    <span className="font-bold text-sm">{vendor.rating}</span>
-                    <Star size={14} fill="currentColor" />
+                <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 bg-neo-yellow px-2 py-1 rounded border-2 border-neo-black shadow-hard-sm shrink-0">
+                        <span className="font-bold text-sm">{vendor.rating}</span>
+                        <Star size={14} fill="currentColor" />
+                    </div>
+                    {/* Heart Toggle */}
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
+                        className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-neo-black hover:bg-red-50 active:scale-95 transition-all"
+                    >
+                        <Heart 
+                            size={16} 
+                            className={isFavorite ? "fill-red-500 text-red-500" : "text-neo-black"} 
+                        />
+                    </button>
                 </div>
             </div>
             
@@ -216,11 +202,12 @@ const Card: React.FC<CardProps> = ({ vendor, isTop, onSwipe, onSelect, dragConst
             </div>
         </div>
 
+        {/* Compact View Details Button */}
         <button 
             onClick={(e) => { e.stopPropagation(); onSelect(); }}
-            className="w-full mt-3 bg-neo-teal text-white font-bold py-3 rounded-xl border-2 border-neo-black shadow-hard active:translate-y-[2px] active:translate-x-[2px] active:shadow-none flex items-center justify-center gap-2 transition-all shrink-0"
+            className="w-full mt-3 bg-neo-teal text-white font-bold py-2 rounded-lg border-2 border-neo-black shadow-hard active:translate-y-[2px] active:translate-x-[2px] active:shadow-none flex items-center justify-center gap-2 transition-all shrink-0 text-sm"
         >
-            <Info size={20} />
+            <Info size={16} />
             View Details
         </button>
       </div>

@@ -6,6 +6,7 @@ export interface Review {
   avatar: string;
   comment: string;
   rating: number;
+  date: string;
 }
 
 export interface Vendor {
