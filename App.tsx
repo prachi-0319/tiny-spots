@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import Navbar from './components/Navbar';
 import Discover from './components/Discover';
 import Map from './components/Map';
@@ -11,29 +10,42 @@ import { Vendor, Tab, Review, User } from './types';
 import DetailModal from './components/DetailModal';
 
 // ==========================================
-// SUPABASE CONFIG
+// CONFIGURATION
 // ==========================================
-const supabaseUrl = 'https://ilbhwypqiqyfavhezuic.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsYmh3eXBxaXF5ZmF2aGV6dWljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0NzY1NzQsImV4cCI6MjA4NjA1MjU3NH0.7ZHokCe1mFSiU6OncYdl2GptAP5F7oQRKuGbSiE5tu4';
+// PASTE YOUR SUPABASE KEYS HERE
+const SUPABASE_URL: string = "https://ilbhwypqiqyfavhezuic.supabase.co";
+const SUPABASE_KEY: string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsYmh3eXBxaXF5ZmF2aGV6dWljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0NzY1NzQsImV4cCI6MjA4NjA1MjU3NH0.7ZHokCe1mFSiU6OncYdl2GptAP5F7oQRKuGbSiE5tu4";
 
-// Safely initialize Supabase. 
-// If the URL is the placeholder or invalid, we leave it null to trigger fallback/mock mode.
+// ==========================================
+// GLOBAL TYPES
+// ==========================================
+declare global {
+  interface Window {
+    supabase: any;
+  }
+}
+
+// ==========================================
+// INITIALIZATION LOGIC
+// ==========================================
 let supabase: any = null;
+let dbConnectionStatus: 'connected' | 'mock' = 'mock';
 
 try {
-  // Validate URL format to preventing crashing on invalid/empty URLs
-  const isValidUrl = (url: string) => {
-    try { return Boolean(new URL(url)); } catch (e) { return false; }
-  };
-
-  if (supabaseUrl && supabaseUrl !== 'https://ilbhwypqiqyfavhezuic.supabase.co' && isValidUrl(supabaseUrl)) {
-    supabase = createClient(supabaseUrl, supabaseKey);
-  } else {
-    console.warn("Supabase URL not configured or invalid. Running in Mock Mode.");
+  // 1. Check if the script loaded globally
+  if (window.supabase && window.supabase.createClient) {
+      // 2. Check if keys are actually set (not placeholders)
+      const hasValidKeys = SUPABASE_URL && SUPABASE_URL !== "YOUR_URL_GOES_HERE" && SUPABASE_URL.startsWith('http');
+      
+      if (hasValidKeys) {
+          supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+          dbConnectionStatus = 'connected';
+      }
   }
 } catch (e) {
-  console.warn("Supabase initialization failed. Running in Mock Mode.", e);
+  console.warn("Supabase init error:", e);
 }
+
 
 const App: React.FC = () => {
   // Auth State
@@ -41,11 +53,20 @@ const App: React.FC = () => {
 
   // App State
   const [activeTab, setActiveTab] = useState<Tab>('discover');
-  const [vendors, setVendors] = useState<Vendor[]>([]); // Start empty
+  const [vendors, setVendors] = useState<Vendor[]>([]); 
   const [isLoading, setIsLoading] = useState(true);
   const [selectedVendorId, setSelectedVendorId] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  // 0. LOG STATUS ON MOUNT
+  useEffect(() => {
+    if (dbConnectionStatus === 'connected') {
+        console.log("%c App Status: 🟢 Connected to DB ", "background: #222; color: #bada55");
+    } else {
+        console.warn("%c App Status: 🔴 Using Mock Data (Check Supabase Keys) ", "background: #222; color: #ff5555");
+    }
+  }, []);
 
   // 1. FETCH VENDORS ON LOAD
   useEffect(() => {
@@ -55,7 +76,11 @@ const App: React.FC = () => {
         if (!supabase) throw new Error("Mock Mode");
 
         const { data, error } = await supabase.from('vendors').select('*');
-        if (error || !data || data.length === 0) throw error;
+        if (error) {
+            console.error("Supabase Vendor Fetch Error:", error.message);
+            throw error;
+        }
+        if (!data || data.length === 0) throw new Error("No data returned");
 
         // Map snake_case from DB to camelCase for App
         const mappedVendors: Vendor[] = data.map((v: any) => ({
@@ -72,7 +97,7 @@ const App: React.FC = () => {
         }));
         setVendors(mappedVendors);
       } catch (err) {
-        console.log('Using Mock Data for Vendors (Supabase disconnected or empty).');
+        console.log('Using Mock Data for Vendors (Fallback).');
         setVendors(INITIAL_VENDORS);
       } finally {
         setIsLoading(false);
@@ -122,6 +147,17 @@ const App: React.FC = () => {
 
   // 3. AUTHENTICATION HANDLER
   const handleAuth = async (formData: any, isLogin: boolean): Promise<boolean> => {
+    
+    // --- VALIDATION (Signup Only) ---
+    if (!isLogin) {
+        // Password Regex: Min 8 chars, 1 Upper, 1 Lower, 1 Special
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{8,}$/;
+        if (!passwordRegex.test(formData.password)) {
+            alert("Password Requirements:\n- At least 8 characters\n- One uppercase letter\n- One lowercase letter\n- One special character");
+            return false;
+        }
+    }
+
     try {
         let user: User | null = null;
 
@@ -140,7 +176,7 @@ const App: React.FC = () => {
                     name: formData.name,
                     email: formData.email,
                     pronouns: formData.pronouns,
-                    avatarSeed: 'Felix',
+                    avatarUrl: `https://api.dicebear.com/7.x/adventurer/svg?seed=${Date.now()}`,
                     favorites: []
                  };
                  setCurrentUser(demoUser);
@@ -159,40 +195,68 @@ const App: React.FC = () => {
                 .eq('password', formData.password) // Simple check (in real app use Auth service)
                 .single();
             
+            if (error) {
+                console.error("Supabase Login Error:", error.message);
+            }
+            
             if (data && !error) {
                 user = {
                     id: data.id,
                     name: data.name,
                     email: data.email,
                     pronouns: data.pronouns,
-                    avatarSeed: data.avatar_seed,
+                    avatarUrl: data.avatar_url || `https://api.dicebear.com/7.x/adventurer/svg?seed=${data.name}`,
                     favorites: data.favorites || []
                 };
             }
         } else {
-            // Signup: Insert new user
-            const newUser = {
+            // Signup
+            
+            // 1. Duplicate Email Check
+            const { data: existingUsers } = await supabase
+                .from('users')
+                .select('email')
+                .eq('email', formData.email);
+            
+            if (existingUsers && existingUsers.length > 0) {
+                alert("This email is already registered! Please login instead.");
+                return false;
+            }
+
+            // 2. Generate Avatar URL Client-Side
+            // Fixes Schema Mismatch: We insert 'avatar_url', NOT 'avatar_seed'
+            const randomSeed = Math.random().toString(36).substring(7);
+            const generatedAvatarUrl = `https://api.dicebear.com/7.x/adventurer/svg?seed=${randomSeed}`;
+
+            // 3. Insert new user
+            const newUserPayload = {
                 name: formData.name,
                 email: formData.email,
                 password: formData.password,
                 pronouns: formData.pronouns || 'they/them',
-                avatar_seed: Math.random().toString(36).substring(7),
+                avatar_url: generatedAvatarUrl, // Correct column name
                 favorites: []
             };
 
             const { data, error } = await supabase
                 .from('users')
-                .insert([newUser])
+                .insert([newUserPayload])
                 .select()
                 .single();
             
-            if (data && !error) {
+            if (error) {
+                console.error("Supabase Signup Error Details:", error);
+                alert(`Signup Failed: ${error.message}`);
+                return false;
+            }
+
+            if (data) {
                  user = {
                     id: data.id,
                     name: data.name,
                     email: data.email,
                     pronouns: data.pronouns,
-                    avatarSeed: data.avatar_seed,
+                    avatarUrl: data.avatar_url,
                     favorites: []
                 };
             }
@@ -206,7 +270,7 @@ const App: React.FC = () => {
         
         return false;
     } catch (err) {
-        console.error("Auth error", err);
+        console.error("Auth Exception:", err);
         return false;
     }
   };
@@ -348,7 +412,7 @@ const App: React.FC = () => {
               onClick={() => setIsProfileOpen(true)}
               className="w-10 h-10 bg-neo-teal border-2 border-neo-black rounded-full shadow-hard-sm flex items-center justify-center overflow-hidden hover:scale-105 active:shadow-none active:translate-y-[2px] transition-all"
             >
-               <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.avatarSeed}`} alt="Profile" className="w-full h-full" />
+               <img src={currentUser.avatarUrl} alt="Profile" className="w-full h-full object-cover" />
             </button>
         </header>
 

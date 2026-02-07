@@ -60,25 +60,25 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpdateUser, onClose, favorite
             </button>
 
             <div className="w-24 h-24 bg-neo-teal rounded-full border-2 border-neo-black mb-4 overflow-hidden shadow-hard-sm">
-                <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.avatarSeed}`} alt="Avatar" className="w-full h-full" />
+                <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
             </div>
 
             {isEditing ? (
                 <div className="w-full space-y-3">
                      <input 
-                        className="w-full text-center font-bold text-xl border-b-2 border-neo-black focus:outline-none focus:border-neo-orange bg-transparent pb-1"
+                        className="w-full text-center font-bold text-xl border-b-2 border-neo-black focus:outline-none focus:border-neo-orange bg-white text-gray-900 pb-1"
                         value={formData.name}
                         onChange={(e) => setFormData({...formData, name: e.target.value})}
                         placeholder="Name"
                      />
                      <input 
-                        className="w-full text-center text-sm font-medium text-gray-500 border-b-2 border-neo-black focus:outline-none focus:border-neo-orange bg-transparent pb-1"
+                        className="w-full text-center text-sm font-medium text-gray-500 border-b-2 border-neo-black focus:outline-none focus:border-neo-orange bg-white text-gray-900 pb-1"
                         value={formData.pronouns}
                         onChange={(e) => setFormData({...formData, pronouns: e.target.value})}
                         placeholder="Pronouns"
                      />
                      <input 
-                        className="w-full text-center text-xs text-gray-400 border-b-2 border-neo-black focus:outline-none focus:border-neo-orange bg-transparent pb-1"
+                        className="w-full text-center text-xs text-gray-400 border-b-2 border-neo-black focus:outline-none focus:border-neo-orange bg-white text-gray-900 pb-1"
                         value={formData.email}
                         onChange={(e) => setFormData({...formData, email: e.target.value})}
                         placeholder="Email"

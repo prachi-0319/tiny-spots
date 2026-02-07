@@ -177,7 +177,7 @@ const DetailModal: React.FC<DetailModalProps> = ({ vendor, onClose, onAddReview,
                             value={newReviewText}
                             onChange={(e) => setNewReviewText(e.target.value)}
                             placeholder="How was it?"
-                            className="flex-1 bg-gray-100 border-2 border-transparent focus:border-neo-black rounded-lg px-3 py-2 text-sm outline-none transition-colors"
+                            className="flex-1 bg-white text-gray-900 border-2 border-neo-black focus:bg-neo-yellow/20 rounded-lg px-3 py-2 text-sm outline-none transition-colors placeholder-gray-400"
                         />
                         <button 
                             type="submit"

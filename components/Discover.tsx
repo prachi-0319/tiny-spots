@@ -163,7 +163,7 @@ const Card: React.FC<CardProps> = ({ vendor, isTop, onSwipe, onSelect, isFavorit
       </div>
 
       {/* Content Section - Simplified */}
-      <div className="flex-[1] p-5 flex flex-col justify-between relative bg-white min-h-0">
+      <div className="flex-[1] p-4 flex flex-col justify-between relative bg-white min-h-0">
         <div>
             <div className="flex justify-between items-start mb-1">
                 <h2 className="text-2xl font-bold leading-tight mr-2 line-clamp-1">{vendor.name}</h2>
@@ -191,12 +191,12 @@ const Card: React.FC<CardProps> = ({ vendor, isTop, onSwipe, onSelect, isFavorit
             </div>
         </div>
 
-        {/* View Details Button */}
+        {/* View Details Button (Reduced Size) */}
         <button 
             onClick={(e) => { e.stopPropagation(); onSelect(); }}
-            className="w-full mt-2 bg-neo-teal text-white font-bold py-3 rounded-xl border-2 border-neo-black shadow-hard active:translate-y-[2px] active:translate-x-[2px] active:shadow-none flex items-center justify-center gap-2 transition-all shrink-0"
+            className="w-full mt-2 bg-neo-teal text-white font-bold py-2 text-sm rounded-xl border-2 border-neo-black shadow-hard active:translate-y-[2px] active:translate-x-[2px] active:shadow-none flex items-center justify-center gap-2 transition-all shrink-0"
         >
-            <Info size={18} />
+            <Info size={16} />
             View Details
         </button>
       </div>

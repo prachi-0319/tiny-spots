@@ -5,7 +5,7 @@ export interface User {
   name: string;
   email: string;
   pronouns: string;
-  avatarSeed: string;
+  avatarUrl: string; // Changed from avatarSeed to match DB 'avatar_url'
   favorites?: string[]; // Array of Vendor IDs
   password?: string; // Only used for Auth logic
 }

@@ -24,7 +24,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onAuth }) => {
     try {
         const success = await onAuth(formData, isLogin);
         if (!success) {
-            setError(isLogin ? "Invalid email or password." : "Could not create account.");
+            // Note: Alerts are handled in App.tsx for specific validation errors
+            // This fallback is mostly for login failures
+            if (isLogin) setError("Invalid email or password.");
         }
     } catch (err) {
         setError("Something went wrong.");
@@ -66,7 +68,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onAuth }) => {
                         <input 
                             required 
                             type="text" 
-                            className="w-full p-3 border-2 border-neo-black rounded-xl focus:bg-neo-yellow/20 outline-none transition-colors"
+                            className="w-full p-3 bg-white text-black border-2 border-neo-black placeholder-gray-400 rounded-xl focus:bg-neo-yellow/20 outline-none transition-colors"
                             placeholder="Alex Explorer"
                             value={formData.name}
                             onChange={e => setFormData({...formData, name: e.target.value})}
@@ -76,7 +78,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onAuth }) => {
                         <label className="block font-bold text-sm mb-1">Pronouns</label>
                         <input 
                             type="text" 
-                            className="w-full p-3 border-2 border-neo-black rounded-xl focus:bg-neo-yellow/20 outline-none transition-colors"
+                            className="w-full p-3 bg-white text-black border-2 border-neo-black placeholder-gray-400 rounded-xl focus:bg-neo-yellow/20 outline-none transition-colors"
                             placeholder="they/them"
                             value={formData.pronouns}
                             onChange={e => setFormData({...formData, pronouns: e.target.value})}
@@ -90,7 +92,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onAuth }) => {
                 <input 
                     required 
                     type="email" 
-                    className="w-full p-3 border-2 border-neo-black rounded-xl focus:bg-neo-yellow/20 outline-none transition-colors"
+                    className="w-full p-3 bg-white text-black border-2 border-neo-black placeholder-gray-400 rounded-xl focus:bg-neo-yellow/20 outline-none transition-colors"
                     placeholder="hello@tinyspots.com"
                     value={formData.email}
                     onChange={e => setFormData({...formData, email: e.target.value})}
@@ -102,7 +104,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onAuth }) => {
                 <input 
                     required 
                     type="password" 
-                    className="w-full p-3 border-2 border-neo-black rounded-xl focus:bg-neo-yellow/20 outline-none transition-colors"
+                    className="w-full p-3 bg-white text-black border-2 border-neo-black placeholder-gray-400 rounded-xl focus:bg-neo-yellow/20 outline-none transition-colors"
                     placeholder="••••••••"
                     value={formData.password}
                     onChange={e => setFormData({...formData, password: e.target.value})}

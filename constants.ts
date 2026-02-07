@@ -10,7 +10,7 @@ export const MOCK_USER: User = {
   name: 'Alex Explorer',
   email: 'alex@tinyspots.com',
   pronouns: 'they/them',
-  avatarSeed: 'Felix'
+  avatarUrl: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Felix'
 };
 
 export const INITIAL_VENDORS: Vendor[] = [

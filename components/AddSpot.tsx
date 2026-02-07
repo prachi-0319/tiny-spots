@@ -64,7 +64,7 @@ const AddSpot: React.FC<AddSpotProps> = ({ onAddVendor }) => {
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
                 placeholder="e.g. Aunty's Momos" 
-                className="w-full p-4 bg-white border-2 border-neo-black rounded-xl shadow-hard focus:outline-none focus:bg-neo-yellow focus:ring-0 transition-colors placeholder:text-gray-400 font-medium"
+                className="w-full p-4 bg-white text-black border-2 border-neo-black rounded-xl shadow-hard focus:outline-none focus:bg-neo-yellow focus:ring-0 transition-colors placeholder-gray-400 font-medium"
             />
         </div>
 
@@ -98,7 +98,7 @@ const AddSpot: React.FC<AddSpotProps> = ({ onAddVendor }) => {
                     value={formData.location}
                     onChange={(e) => setFormData({...formData, location: e.target.value})}
                     placeholder="Near the old post office..." 
-                    className="w-full p-4 pr-12 bg-white border-2 border-neo-black rounded-xl shadow-hard focus:outline-none focus:bg-neo-yellow transition-colors font-medium"
+                    className="w-full p-4 pr-12 bg-white text-black border-2 border-neo-black rounded-xl shadow-hard focus:outline-none focus:bg-neo-yellow transition-colors placeholder-gray-400 font-medium"
                 />
                 <MapPin className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
             </div>
@@ -114,7 +114,7 @@ const AddSpot: React.FC<AddSpotProps> = ({ onAddVendor }) => {
                     value={formData.timings}
                     onChange={(e) => setFormData({...formData, timings: e.target.value})}
                     placeholder="e.g. Mon-Sat: 10am - 9pm" 
-                    className="w-full p-4 pr-12 bg-white border-2 border-neo-black rounded-xl shadow-hard focus:outline-none focus:bg-neo-yellow transition-colors font-medium"
+                    className="w-full p-4 pr-12 bg-white text-black border-2 border-neo-black rounded-xl shadow-hard focus:outline-none focus:bg-neo-yellow transition-colors placeholder-gray-400 font-medium"
                 />
                 <Clock className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
             </div>
@@ -129,7 +129,7 @@ const AddSpot: React.FC<AddSpotProps> = ({ onAddVendor }) => {
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
                 placeholder="Best spicy chutney in town..." 
-                className="w-full p-4 bg-white border-2 border-neo-black rounded-xl shadow-hard focus:outline-none focus:bg-neo-yellow transition-colors resize-none font-medium"
+                className="w-full p-4 bg-white text-black border-2 border-neo-black rounded-xl shadow-hard focus:outline-none focus:bg-neo-yellow transition-colors placeholder-gray-400 resize-none font-medium"
             />
         </div>
 
