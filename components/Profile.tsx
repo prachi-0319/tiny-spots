@@ -1,18 +1,35 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { X, Heart, MapPin } from 'lucide-react';
-import { Vendor } from '../types';
+import { X, Heart, MapPin, Edit2, Check, Star } from 'lucide-react';
+import { Vendor, User } from '../types';
 import { CATEGORY_COLORS } from '../constants';
 
 interface ProfileProps {
+  user: User;
+  onUpdateUser: (user: User) => void;
   onClose: () => void;
   favorites: string[];
   vendors: Vendor[];
   onSelectVendor: (id: string) => void;
 }
 
-const Profile: React.FC<ProfileProps> = ({ onClose, favorites, vendors, onSelectVendor }) => {
+const Profile: React.FC<ProfileProps> = ({ user, onUpdateUser, onClose, favorites, vendors, onSelectVendor }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    name: user.name,
+    pronouns: user.pronouns,
+    email: user.email
+  });
+
   const favoriteVendors = vendors.filter(v => favorites.includes(v.id));
+
+  const handleSave = () => {
+    onUpdateUser({
+      ...user,
+      ...formData
+    });
+    setIsEditing(false);
+  };
 
   return (
     <motion.div 
@@ -34,13 +51,46 @@ const Profile: React.FC<ProfileProps> = ({ onClose, favorites, vendors, onSelect
 
       <div className="flex-1 overflow-y-auto p-6">
         {/* User Card */}
-        <div className="bg-white border-2 border-neo-black rounded-3xl p-6 shadow-hard mb-8 flex flex-col items-center">
+        <div className="bg-white border-2 border-neo-black rounded-3xl p-6 shadow-hard mb-8 flex flex-col items-center relative">
+            <button 
+                onClick={() => isEditing ? handleSave() : setIsEditing(true)}
+                className="absolute top-4 right-4 p-2 bg-gray-100 rounded-lg border-2 border-neo-black hover:bg-neo-teal hover:text-white transition-colors"
+            >
+                {isEditing ? <Check size={16} /> : <Edit2 size={16} />}
+            </button>
+
             <div className="w-24 h-24 bg-neo-teal rounded-full border-2 border-neo-black mb-4 overflow-hidden shadow-hard-sm">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Avatar" className="w-full h-full" />
+                <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.avatarSeed}`} alt="Avatar" className="w-full h-full" />
             </div>
-            <h3 className="text-xl font-bold">Alex Explorer</h3>
-            <p className="text-gray-500 font-medium text-sm">they/them</p>
-            <p className="text-gray-400 text-xs mt-1">alex@tinyspots.com</p>
+
+            {isEditing ? (
+                <div className="w-full space-y-3">
+                     <input 
+                        className="w-full text-center font-bold text-xl border-b-2 border-neo-black focus:outline-none focus:border-neo-orange bg-transparent pb-1"
+                        value={formData.name}
+                        onChange={(e) => setFormData({...formData, name: e.target.value})}
+                        placeholder="Name"
+                     />
+                     <input 
+                        className="w-full text-center text-sm font-medium text-gray-500 border-b-2 border-neo-black focus:outline-none focus:border-neo-orange bg-transparent pb-1"
+                        value={formData.pronouns}
+                        onChange={(e) => setFormData({...formData, pronouns: e.target.value})}
+                        placeholder="Pronouns"
+                     />
+                     <input 
+                        className="w-full text-center text-xs text-gray-400 border-b-2 border-neo-black focus:outline-none focus:border-neo-orange bg-transparent pb-1"
+                        value={formData.email}
+                        onChange={(e) => setFormData({...formData, email: e.target.value})}
+                        placeholder="Email"
+                     />
+                </div>
+            ) : (
+                <>
+                    <h3 className="text-xl font-bold">{user.name}</h3>
+                    <p className="text-gray-500 font-medium text-sm">{user.pronouns}</p>
+                    <p className="text-gray-400 text-xs mt-1">{user.email}</p>
+                </>
+            )}
         </div>
 
         {/* Favorites Section */}
@@ -55,11 +105,14 @@ const Profile: React.FC<ProfileProps> = ({ onClose, favorites, vendors, onSelect
                 <p className="text-xs text-gray-400 mt-1">Go explore and heart some spots.</p>
             </div>
         ) : (
-            <div className="space-y-4">
+            <div className="space-y-4 pb-20">
                 {favoriteVendors.map(vendor => (
                     <div 
                         key={vendor.id}
-                        onClick={() => { onClose(); onSelectVendor(vendor.id); }}
+                        onClick={() => {
+                            // Open modal but DON'T close profile. Modal z-index is higher.
+                            onSelectVendor(vendor.id);
+                        }}
                         className="bg-white border-2 border-neo-black rounded-xl p-3 shadow-hard-sm flex gap-3 cursor-pointer hover:bg-gray-50 active:scale-95 transition-all"
                     >
                         <img src={vendor.imageUrl} alt={vendor.name} className="w-20 h-20 rounded-lg object-cover border-2 border-neo-black shrink-0" />
@@ -88,8 +141,5 @@ const Profile: React.FC<ProfileProps> = ({ onClose, favorites, vendors, onSelect
     </motion.div>
   );
 };
-
-// Quick fix for Star icon import since I used it inside Profile
-import { Star } from 'lucide-react';
 
 export default Profile;

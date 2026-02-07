@@ -1,4 +1,14 @@
-export type Category = 'Food' | 'Chai' | 'Thrift' | 'Art' | 'Others';
+export type Category = 'Food' | 'Chai' | 'Thrift' | 'Shop' | 'Others';
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  pronouns: string;
+  avatarSeed: string;
+  favorites?: string[]; // Array of Vendor IDs
+  password?: string; // Only used for Auth logic
+}
 
 export interface Review {
   id: string;
@@ -7,6 +17,7 @@ export interface Review {
   comment: string;
   rating: number;
   date: string;
+  vendor_id?: string; // For Supabase relation
 }
 
 export interface Vendor {
@@ -17,7 +28,7 @@ export interface Vendor {
   rating: number;
   description: string;
   reviews: Review[];
-  // Changed back to percentage based (0-100) for custom div map
+  // Percentage based (0-100) for custom div map
   coordinates: { x: number; y: number }; 
   address: string;
   timings: string;

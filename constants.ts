@@ -1,4 +1,17 @@
-import { Vendor } from './types';
+import { Vendor, User } from './types';
+
+// ==========================================
+// SIMULATED DATABASE (BACKEND CONNECTION)
+// ==========================================
+// In a real app, replace these arrays with fetch/axios calls to your API (Supabase, Firebase, etc.)
+
+export const MOCK_USER: User = {
+  id: 'u1',
+  name: 'Alex Explorer',
+  email: 'alex@tinyspots.com',
+  pronouns: 'they/them',
+  avatarSeed: 'Felix'
+};
 
 export const INITIAL_VENDORS: Vendor[] = [
   {
@@ -47,8 +60,8 @@ export const INITIAL_VENDORS: Vendor[] = [
   },
   {
     id: '4',
-    name: "Abstract Street Art",
-    type: 'Art',
+    name: "Abstract Street Shop",
+    type: 'Shop',
     imageUrl: 'https://images.unsplash.com/photo-1549833772-5b96792bdf27?q=80&w=2070&auto=format&fit=crop',
     rating: 4.2,
     description: "Live spray painting sessions and custom canvas shoes. Bring your own shoes for a discount!",
@@ -79,6 +92,6 @@ export const CATEGORY_COLORS: Record<string, string> = {
   'Food': 'bg-neo-orange',
   'Chai': 'bg-rose-400',
   'Thrift': 'bg-neo-teal',
-  'Art': 'bg-purple-400',
+  'Shop': 'bg-purple-400',
   'Others': 'bg-neo-yellow'
 };

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { X, Star, MapPin, Clock, Send } from 'lucide-react';
+import { X, Star, MapPin, Clock, Send, Heart } from 'lucide-react';
 import { Vendor, Review } from '../types';
 import { CATEGORY_COLORS } from '../constants';
 
@@ -8,9 +8,11 @@ interface DetailModalProps {
   vendor: Vendor;
   onClose: () => void;
   onAddReview: (review: Review) => void;
+  isFavorite: boolean;
+  onToggleFavorite: () => void;
 }
 
-const DetailModal: React.FC<DetailModalProps> = ({ vendor, onClose, onAddReview }) => {
+const DetailModal: React.FC<DetailModalProps> = ({ vendor, onClose, onAddReview, isFavorite, onToggleFavorite }) => {
   const [newReviewText, setNewReviewText] = useState('');
   const [newReviewRating, setNewReviewRating] = useState(5);
 
@@ -33,7 +35,7 @@ const DetailModal: React.FC<DetailModalProps> = ({ vendor, onClose, onAddReview 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center pointer-events-none">
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center pointer-events-none">
       {/* Backdrop */}
       <motion.div 
         initial={{ opacity: 0 }}
@@ -49,15 +51,28 @@ const DetailModal: React.FC<DetailModalProps> = ({ vendor, onClose, onAddReview 
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-        className="bg-white w-full max-w-md h-[85vh] sm:h-[800px] sm:rounded-3xl rounded-t-3xl border-t-2 sm:border-2 border-neo-black flex flex-col pointer-events-auto overflow-hidden relative shadow-2xl"
+        className="bg-white w-full max-w-md h-[90vh] sm:h-[800px] sm:rounded-3xl rounded-t-3xl border-t-2 sm:border-2 border-neo-black flex flex-col pointer-events-auto overflow-hidden relative shadow-2xl"
       >
-        {/* Close Button */}
-        <button 
-            onClick={onClose}
-            className="absolute top-4 right-4 z-20 w-10 h-10 bg-white border-2 border-neo-black rounded-full flex items-center justify-center shadow-hard hover:bg-gray-100 active:shadow-none active:translate-y-[2px]"
-        >
-            <X size={20} />
-        </button>
+        {/* Controls */}
+        <div className="absolute top-4 right-4 z-20 flex gap-2">
+            {/* Heart in Modal */}
+            <button 
+                onClick={onToggleFavorite}
+                className="w-10 h-10 bg-white border-2 border-neo-black rounded-full flex items-center justify-center shadow-hard hover:bg-red-50 active:shadow-none active:translate-y-[2px] transition-all"
+            >
+                 <Heart 
+                    size={20} 
+                    className={isFavorite ? "fill-red-500 text-red-500" : "text-neo-black"} 
+                />
+            </button>
+            {/* Close */}
+            <button 
+                onClick={onClose}
+                className="w-10 h-10 bg-white border-2 border-neo-black rounded-full flex items-center justify-center shadow-hard hover:bg-gray-100 active:shadow-none active:translate-y-[2px]"
+            >
+                <X size={20} />
+            </button>
+        </div>
 
         {/* Header Image */}
         <div className="h-56 relative shrink-0">
@@ -119,69 +134,62 @@ const DetailModal: React.FC<DetailModalProps> = ({ vendor, onClose, onAddReview 
                 <div className="space-y-4 mb-6">
                     {vendor.reviews.map((review) => (
                         <div key={review.id} className="bg-gray-50 border-2 border-neo-black rounded-xl p-4 shadow-sm">
-                            <div className="flex items-center gap-3 mb-2">
-                                <img src={review.avatar} alt={review.user} className="w-8 h-8 rounded-full border-2 border-neo-black" />
-                                <div className="flex-1">
-                                    <div className="flex justify-between items-center">
-                                        <div className="font-bold text-xs">{review.user}</div>
-                                        <span className="text-[10px] text-gray-400 font-medium">{review.date || 'Recently'}</span>
-                                    </div>
-                                    <div className="flex text-neo-orange">
-                                        {[...Array(5)].map((_, i) => (
-                                            <Star key={i} size={10} fill={i < review.rating ? "currentColor" : "none"} />
-                                        ))}
+                            <div className="flex justify-between items-start mb-2">
+                                <div className="flex items-center gap-2">
+                                    <img src={review.avatar} alt={review.user} className="w-8 h-8 rounded-full border border-neo-black" />
+                                    <div>
+                                        <span className="block text-sm font-bold">{review.user}</span>
+                                        <span className="text-[10px] text-gray-500">{review.date}</span>
                                     </div>
                                 </div>
+                                <div className="flex">
+                                    {[...Array(5)].map((_, i) => (
+                                        <Star key={i} size={12} className={i < review.rating ? "fill-neo-orange text-neo-orange" : "text-gray-300"} />
+                                    ))}
+                                </div>
                             </div>
-                            <div className="relative bg-white border-2 border-neo-black p-3 rounded-lg rounded-tl-none shadow-hard-sm ml-4">
-                                <p className="text-xs font-medium">"{review.comment}"</p>
-                            </div>
+                            <p className="text-sm text-gray-700">{review.comment}</p>
                         </div>
                     ))}
                 </div>
 
-                {/* Add Review Form */}
-                <div className="bg-white border-2 border-neo-black rounded-xl p-4 shadow-hard">
+                {/* Add Review */}
+                <form onSubmit={handleSubmitReview} className="bg-white border-2 border-neo-black rounded-xl p-4 shadow-hard-sm">
                     <h4 className="font-bold text-sm mb-3">Add your review</h4>
-                    <form onSubmit={handleSubmitReview}>
-                        <div className="flex gap-2 mb-3">
-                             {[1, 2, 3, 4, 5].map((star) => (
-                                 <button 
-                                    key={star} 
-                                    type="button"
-                                    onClick={() => setNewReviewRating(star)}
-                                    className="focus:outline-none transition-transform hover:scale-110"
-                                 >
-                                     <Star 
-                                        size={24} 
-                                        className={star <= newReviewRating ? "fill-neo-orange text-neo-orange" : "text-gray-300"} 
-                                    />
-                                 </button>
-                             ))}
-                        </div>
-                        <div className="flex gap-2">
-                            <input 
-                                type="text" 
-                                value={newReviewText}
-                                onChange={(e) => setNewReviewText(e.target.value)}
-                                placeholder="Was it good?"
-                                className="flex-1 border-2 border-neo-black rounded-lg px-3 py-2 text-sm focus:outline-none focus:bg-neo-yellow/20"
-                            />
-                            <button 
-                                type="submit"
-                                disabled={!newReviewText}
-                                className="bg-neo-black text-white p-2 rounded-lg disabled:opacity-50"
-                            >
-                                <Send size={18} />
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    <div className="flex gap-2 mb-3">
+                         {[1, 2, 3, 4, 5].map((star) => (
+                             <button
+                                key={star}
+                                type="button"
+                                onClick={() => setNewReviewRating(star)}
+                                className="focus:outline-none"
+                             >
+                                 <Star 
+                                    size={20} 
+                                    className={star <= newReviewRating ? "fill-neo-orange text-neo-orange" : "text-gray-300"} 
+                                 />
+                             </button>
+                         ))}
+                    </div>
+                    <div className="flex gap-2">
+                        <input 
+                            type="text" 
+                            value={newReviewText}
+                            onChange={(e) => setNewReviewText(e.target.value)}
+                            placeholder="How was it?"
+                            className="flex-1 bg-gray-100 border-2 border-transparent focus:border-neo-black rounded-lg px-3 py-2 text-sm outline-none transition-colors"
+                        />
+                        <button 
+                            type="submit"
+                            disabled={!newReviewText.trim()}
+                            className="bg-neo-teal text-white p-2 rounded-lg border-2 border-neo-black shadow-hard-sm active:shadow-none active:translate-y-[1px] disabled:opacity-50 disabled:active:shadow-hard-sm disabled:active:translate-y-0"
+                        >
+                            <Send size={18} />
+                        </button>
+                    </div>
+                </form>
             </div>
-            
-            <div className="h-8"></div>
         </div>
-
       </motion.div>
     </div>
   );

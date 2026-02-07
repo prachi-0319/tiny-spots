@@ -25,7 +25,6 @@ const Discover: React.FC<DiscoverProps> = ({ vendors, onSelectVendor, favorites,
   }, [vendors, removedIds, activeCategory]);
 
   const handleSwipe = (id: string) => {
-    // Just a small delay to allow animation to complete
     setTimeout(() => {
         setRemovedIds(prev => [...prev, id]);
     }, 200);
@@ -35,7 +34,7 @@ const Discover: React.FC<DiscoverProps> = ({ vendors, onSelectVendor, favorites,
     setRemovedIds([]);
   };
 
-  const categories: (Category | 'All')[] = ['All', 'Food', 'Chai', 'Thrift', 'Art', 'Others'];
+  const categories: (Category | 'All')[] = ['All', 'Food', 'Chai', 'Thrift', 'Shop', 'Others'];
 
   return (
     <div className="w-full h-full flex flex-col relative bg-[#f8f8f8]">
@@ -81,10 +80,9 @@ const Discover: React.FC<DiscoverProps> = ({ vendors, onSelectVendor, favorites,
             </button>
           </div>
         ) : (
-          <div className="relative w-full h-full max-h-[600px]">
+          <div className="relative w-full h-full max-h-[550px]">
              <AnimatePresence>
               {filteredVendors.map((vendor, index) => {
-                 // Only render the top 2 cards for performance
                  const distanceFromTop = filteredVendors.length - 1 - index;
                  if (distanceFromTop > 1) return null;
                  
@@ -150,8 +148,8 @@ const Card: React.FC<CardProps> = ({ vendor, isTop, onSwipe, onSelect, isFavorit
       exit={{ x: x.get() < 0 ? -500 : 500, opacity: 0, transition: { duration: 0.3 } }}
       className="absolute inset-0 bg-white border-2 border-neo-black rounded-3xl shadow-hard overflow-hidden cursor-grab active:cursor-grabbing select-none flex flex-col"
     >
-      {/* Image Section - Flexible height */}
-      <div className="flex-[3] w-full relative overflow-hidden min-h-0 bg-gray-100">
+      {/* Image Section - Maximized */}
+      <div className="flex-[4] w-full relative overflow-hidden min-h-0 bg-gray-100">
         <img 
             src={vendor.imageUrl} 
             alt={vendor.name} 
@@ -164,12 +162,12 @@ const Card: React.FC<CardProps> = ({ vendor, isTop, onSwipe, onSelect, isFavorit
         </div>
       </div>
 
-      {/* Content Section */}
-      <div className="flex-[2] p-4 flex flex-col justify-between relative bg-white min-h-0">
-        <div className="overflow-hidden flex flex-col h-full">
-            <div className="flex justify-between items-start mb-1 shrink-0">
-                <h2 className="text-xl font-bold leading-tight mr-2 line-clamp-1">{vendor.name}</h2>
-                <div className="flex items-center gap-2">
+      {/* Content Section - Simplified */}
+      <div className="flex-[1] p-5 flex flex-col justify-between relative bg-white min-h-0">
+        <div>
+            <div className="flex justify-between items-start mb-1">
+                <h2 className="text-2xl font-bold leading-tight mr-2 line-clamp-1">{vendor.name}</h2>
+                <div className="flex items-center gap-3">
                     <div className="flex items-center gap-1 bg-neo-yellow px-2 py-1 rounded border-2 border-neo-black shadow-hard-sm shrink-0">
                         <span className="font-bold text-sm">{vendor.rating}</span>
                         <Star size={14} fill="currentColor" />
@@ -177,37 +175,28 @@ const Card: React.FC<CardProps> = ({ vendor, isTop, onSwipe, onSelect, isFavorit
                     {/* Heart Toggle */}
                     <button 
                         onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
-                        className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-neo-black hover:bg-red-50 active:scale-95 transition-all"
+                        className="w-9 h-9 flex items-center justify-center rounded-full border-2 border-neo-black hover:bg-red-50 active:scale-95 transition-all"
                     >
                         <Heart 
-                            size={16} 
+                            size={18} 
                             className={isFavorite ? "fill-red-500 text-red-500" : "text-neo-black"} 
                         />
                     </button>
                 </div>
             </div>
             
-            <div className="flex items-center text-gray-600 mb-2 shrink-0">
+            <div className="flex items-center text-gray-600">
                 <MapPin size={16} className="mr-1" />
-                <span className="text-xs font-medium truncate">{vendor.address}</span>
-            </div>
-
-            <div className="overflow-y-auto pr-1">
-                <p className="text-gray-700 text-sm leading-relaxed">
-                    {vendor.description}
-                </p>
-                <p className="text-xs font-bold text-neo-teal mt-2">
-                    Open: {vendor.timings}
-                </p>
+                <span className="text-sm font-medium truncate">{vendor.address}</span>
             </div>
         </div>
 
-        {/* Compact View Details Button */}
+        {/* View Details Button */}
         <button 
             onClick={(e) => { e.stopPropagation(); onSelect(); }}
-            className="w-full mt-3 bg-neo-teal text-white font-bold py-2 rounded-lg border-2 border-neo-black shadow-hard active:translate-y-[2px] active:translate-x-[2px] active:shadow-none flex items-center justify-center gap-2 transition-all shrink-0 text-sm"
+            className="w-full mt-2 bg-neo-teal text-white font-bold py-3 rounded-xl border-2 border-neo-black shadow-hard active:translate-y-[2px] active:translate-x-[2px] active:shadow-none flex items-center justify-center gap-2 transition-all shrink-0"
         >
-            <Info size={16} />
+            <Info size={18} />
             View Details
         </button>
       </div>
