@@ -35,8 +35,7 @@ const Discover: React.FC<DiscoverProps> = ({ vendors, onSelectVendor, favorites,
   const categories: (Category | 'All')[] = ['All', 'Food', 'Chai', 'Thrift', 'Shop', 'Others'];
 
   return (
-    <div className="w-full h-full flex flex-col relative bg-[#f8f8f8]">
-      <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#1A1A1A 2px, transparent 2px)', backgroundSize: '20px 20px' }}></div>
+    <div className="w-full flex-1 flex flex-col relative bg-transparent min-h-0">
       <div className="w-full px-4 pt-2 pb-2 overflow-x-auto no-scrollbar z-10 shrink-0">
         <div className="flex gap-3">
           {categories.map(cat => (
@@ -46,16 +45,16 @@ const Discover: React.FC<DiscoverProps> = ({ vendors, onSelectVendor, favorites,
           ))}
         </div>
       </div>
-      {/* ADDED pb-24 for mobile scrolling safety */}
-      <div className="flex-1 relative w-full max-w-sm mx-auto flex items-center justify-center p-4 pb-24">
+      
+      <div className="flex-1 relative w-full max-w-sm mx-auto flex items-center justify-center p-4 flex-shrink-0">
         {filteredVendors.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center z-0 w-full">
+          <div className="flex flex-col items-center justify-center h-full text-center z-0 w-full py-20">
             <div className="w-24 h-24 bg-neo-teal border-2 border-neo-black rounded-full flex items-center justify-center mb-6 shadow-hard animate-bounce"><Filter size={48} className="text-white" /></div>
-            <h2 className="text-2xl font-bold mb-2">No Spots Found!</h2>
+            <h2 className="text-2xl font-bold mb-2 text-neo-black">No Spots Found!</h2>
             <button onClick={resetDeck} className="bg-neo-orange px-6 py-3 border-2 border-neo-black shadow-hard font-bold rounded-xl active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all">Reset Deck</button>
           </div>
         ) : (
-          <div className="relative w-full h-full max-h-[550px]">
+          <div className="relative w-full h-[520px] flex-shrink-0">
              <AnimatePresence>
               {filteredVendors.map((vendor, index) => {
                  const isTop = index === filteredVendors.length - 1;
@@ -84,7 +83,7 @@ const Card: React.FC<CardProps> = ({ vendor, isTop, onSwipe, onSelect, isFavorit
       exit={{ x: x.get() < 0 ? -500 : 500, opacity: 0, transition: { duration: 0.3 } }}
       className="absolute inset-0 bg-white border-2 border-neo-black rounded-3xl shadow-hard overflow-hidden cursor-grab active:cursor-grabbing select-none flex flex-col"
     >
-      <div className="flex-[4] w-full relative overflow-hidden min-h-0 bg-gray-100">
+      <div className="flex-[3] w-full relative overflow-hidden min-h-0 bg-gray-100">
         <img src={vendor.image_url || "https://images.unsplash.com/photo-1555939594-58d7cb561ad1"} alt={vendor.name} className="w-full h-full object-cover pointer-events-none" />
         <div className="absolute top-4 right-4 z-10">
             <span className={`${CATEGORY_COLORS[vendor.category] || 'bg-gray-300'} px-3 py-1 rounded-full border-2 border-neo-black font-bold text-sm shadow-hard-sm`}>
@@ -92,10 +91,10 @@ const Card: React.FC<CardProps> = ({ vendor, isTop, onSwipe, onSelect, isFavorit
             </span>
         </div>
       </div>
-      <div className="flex-[1] p-4 flex flex-col justify-between items-center relative bg-white min-h-0">
+      <div className="flex-[2] p-4 flex flex-col justify-between items-center relative bg-white min-h-0">
         <div className="w-full">
             <div className="flex justify-between items-start mb-1">
-                <h2 className="text-2xl font-bold leading-tight mr-2 line-clamp-1">{vendor.name}</h2>
+                <h2 className="text-2xl font-bold leading-tight mr-2 line-clamp-1 text-neo-black">{vendor.name}</h2>
                 <div className="flex items-center gap-3">
                     <div className="flex items-center gap-1 bg-neo-yellow px-2 py-1 rounded border-2 border-neo-black shadow-hard-sm shrink-0">
                         <span className="font-bold text-sm">{vendor.rating}</span>
@@ -111,7 +110,8 @@ const Card: React.FC<CardProps> = ({ vendor, isTop, onSwipe, onSelect, isFavorit
                 <span className="text-sm font-medium truncate">{vendor.location || "Unknown Location"}</span>
             </div>
         </div>
-        <button onClick={(e) => { e.stopPropagation(); onSelect(); }} className="w-2/3 mt-4 mb-4 bg-neo-teal text-white font-bold py-2 px-6 text-sm rounded-xl border-2 border-neo-black shadow-hard active:translate-y-[2px] active:translate-x-[2px] active:shadow-none flex items-center justify-center gap-2 transition-all shrink-0">
+        {/* mb-8 applied for bottom clearance above the floating navbar */}
+        <button onClick={(e) => { e.stopPropagation(); onSelect(); }} className="w-auto px-6 py-2 mt-4 mb-8 bg-neo-teal text-white font-bold text-sm rounded-xl border-2 border-neo-black shadow-hard active:translate-y-[2px] active:translate-x-[2px] active:shadow-none flex items-center justify-center gap-2 transition-all shrink-0">
             <Info size={16} /> View Details
         </button>
       </div>

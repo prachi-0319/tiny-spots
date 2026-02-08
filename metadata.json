@@ -1,5 +1,7 @@
 {
   "name": "TinySpots",
   "description": "Discover hidden street vendors and local gems with a playful, neo-brutalist interface.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [
+    "camera"
+  ]
 }

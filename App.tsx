@@ -46,40 +46,38 @@ const App: React.FC = () => {
   const [favorites, setFavorites] = useState<string[]>([]);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
+  const fetchVendors = async () => {
+    setIsLoading(true);
+    try {
+      if (!supabase) throw new Error("Mock Mode");
+
+      const { data, error } = await supabase.from('vendors').select('*');
+      if (error) throw error;
+      
+      const mappedVendors: Vendor[] = data.map((v: any) => ({
+        id: String(v.id),
+        name: v.name,
+        category: v.category || "Others",
+        image_url: v.image_url || "https://images.unsplash.com/photo-1555939594-58d7cb561ad1",
+        rating: v.rating || 4.5,
+        description: v.description || "",
+        coordinates: { 
+          x: v.lat !== undefined ? v.lat : (Math.random() * 80 + 10), 
+          y: v.lng !== undefined ? v.lng : (Math.random() * 70 + 15) 
+        },
+        location: v.location || "Unknown Location",
+        timings: v.timings || "9am - 9pm",
+        reviews: [] 
+      }));
+      setVendors(mappedVendors);
+    } catch (err: any) {
+      setVendors(INITIAL_VENDORS);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchVendors = async () => {
-      setIsLoading(true);
-      try {
-        if (!supabase) throw new Error("Mock Mode");
-
-        const { data, error } = await supabase.from('vendors').select('*');
-        if (error) throw error;
-        
-        console.log("Fetched Vendors from Supabase:", data);
-
-        const mappedVendors: Vendor[] = data.map((v: any) => ({
-          id: v.id,
-          name: v.name,
-          category: v.category || "Others",
-          image_url: v.image_url || "https://images.unsplash.com/photo-1555939594-58d7cb561ad1",
-          rating: v.rating || 4.5,
-          description: v.description || "",
-          coordinates: { 
-            x: v.lat !== undefined ? v.lat : (Math.random() * 80 + 10), 
-            y: v.lng !== undefined ? v.lng : (Math.random() * 70 + 15) 
-          },
-          location: v.location || "Unknown Location",
-          timings: v.timings || "9am - 9pm",
-          reviews: [] 
-        }));
-        setVendors(mappedVendors);
-      } catch (err: any) {
-        setVendors(INITIAL_VENDORS);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchVendors();
   }, []);
 
@@ -116,19 +114,7 @@ const App: React.FC = () => {
 
       if (data && data[0]) {
         alert("Spot Saved to Database!");
-        const savedVendor: Vendor = {
-          id: data[0].id,
-          name: data[0].name,
-          category: data[0].category,
-          image_url: data[0].image_url,
-          rating: data[0].rating,
-          description: data[0].description,
-          location: data[0].location,
-          timings: data[0].timings,
-          coordinates: { x: data[0].lat, y: data[0].lng },
-          reviews: []
-        };
-        setVendors(prev => [savedVendor, ...prev]);
+        fetchVendors();
         setActiveTab('discover');
       }
     } catch (err: any) {
@@ -202,41 +188,48 @@ const App: React.FC = () => {
     const vendor = vendors.find(v => v.id === vendorId);
     if (!vendor) return;
 
-    // 1. Calculate new rating locally
-    const currentCount = vendor.reviews ? vendor.reviews.length : 0;
-    const newRating = parseFloat(((vendor.rating * currentCount + review.rating) / (currentCount + 1)).toFixed(1));
-
-    // 2. Update local UI
-    setVendors(prev => prev.map(v => {
-      if (v.id === vendorId) {
-        return { ...v, reviews: [review, ...v.reviews], rating: newRating };
-      }
-      return v;
-    }));
-
-    if (!supabase) return;
+    if (!supabase) {
+      alert("Local Mode: Review added to UI only.");
+      setVendors(prev => prev.map(v => v.id === vendorId ? { ...v, reviews: [review, ...v.reviews] } : v));
+      return;
+    }
 
     try {
-      // 3. Persist review
-      const { error: revErr } = await supabase.from('reviews').insert([{
-          vendor_id: vendorId,
-          user_name: review.user,
-          user_avatar: review.avatar,
+      const finalVendorId = isNaN(Number(vendorId)) ? vendorId : Number(vendorId);
+
+      const { data, error } = await supabase.from('reviews').insert([{
+          vendor_id: finalVendorId,
+          user_name: currentUser?.name || 'Anonymous',
+          user_avatar: currentUser?.avatarUrl || '',
           comment: review.comment,
           rating: review.rating,
           date: new Date().toISOString().split('T')[0]
-      }]);
-      if (revErr) throw revErr;
+      }]).select();
 
-      // 4. Update vendor rating and count in DB
-      const { error: vendErr } = await supabase.from('vendors').update({
-          rating: newRating
-      }).eq('id', vendorId);
-      
-      if (vendErr) throw vendErr;
-      
+      if (error) {
+        alert("DB REJECTED REVIEW:\n" +
+              "Code: " + error.code + "\n" +
+              "Message: " + error.message + "\n" +
+              "Details: " + (error.details || "No further details."));
+        return;
+      }
+
+      alert("Success! Review Saved.");
+
+      const currentCount = vendor.reviews ? vendor.reviews.length : 0;
+      const newRating = parseFloat(((vendor.rating * currentCount + review.rating) / (currentCount + 1)).toFixed(1));
+
+      setVendors(prev => prev.map(v => {
+        if (v.id === vendorId) {
+          return { ...v, reviews: [review, ...v.reviews], rating: newRating };
+        }
+        return v;
+      }));
+
+      await supabase.from('vendors').update({ rating: newRating }).eq('id', finalVendorId);
+
     } catch (e: any) {
-      alert("Error syncing review to database: " + e.message);
+      alert("Critical Error during submission: " + e.message);
     }
   };
 
@@ -245,9 +238,12 @@ const App: React.FC = () => {
   if (!currentUser) return <LandingPage onAuth={handleAuth} />;
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center sm:py-8 font-sans text-neo-black">
-      <div className="w-full max-w-md h-screen sm:h-[850px] sm:max-h-[95vh] bg-white sm:border-2 sm:border-neo-black sm:shadow-hard sm:rounded-3xl overflow-hidden flex flex-col relative">
-        <header className="px-6 pt-6 pb-2 flex justify-between items-center z-20 bg-white shrink-0">
+    <div className="fixed inset-0 w-full h-[100dvh] bg-stone-100 flex items-center justify-center font-sans text-neo-black overflow-hidden">
+      {/* Root Mobile Container: Edge to edge on mobile, centered frame on desktop */}
+      <div className="relative w-full max-w-md h-full bg-white sm:border-2 sm:border-neo-black sm:shadow-hard sm:rounded-3xl overflow-hidden flex flex-col">
+        
+        {/* Header - Fixed at top */}
+        <header className="px-6 pt-6 pb-2 flex justify-between items-center z-20 bg-white shrink-0 border-b-2 border-neo-black">
             <h1 className="text-3xl font-bold tracking-tight cursor-pointer select-none active:scale-95 transition-transform" onClick={() => setActiveTab('discover')}>
               tiny<span className="text-neo-orange">spots</span>.
             </h1>
@@ -255,14 +251,23 @@ const App: React.FC = () => {
                <img src={currentUser.avatarUrl} alt="Profile" className="w-full h-full object-cover" />
             </button>
         </header>
-        <main className="flex-1 relative overflow-hidden flex flex-col">
-          {activeTab === 'discover' && <Discover vendors={vendors} onSelectVendor={handleSelectVendor} favorites={favorites} onToggleFavorite={handleToggleFavorite} />}
-          {activeTab === 'map' && <Map vendors={vendors} onSelectVendor={handleSelectVendor} />}
-          {activeTab === 'add' && <AddSpot onAddVendor={handleAddVendor} />}
+
+        {/* Scrollable Content Area: Dot background pattern applied here */}
+        <main className="flex-1 w-full h-full overflow-y-auto no-scrollbar pb-32 bg-stone-50 relative">
+          <div className="absolute inset-0 opacity-10 pointer-events-none z-0" style={{ backgroundImage: 'radial-gradient(#1A1A1A 1px, transparent 1px)', backgroundSize: '16px 16px' }}></div>
+          <div className="relative z-10 min-h-full">
+            {activeTab === 'discover' && <Discover vendors={vendors} onSelectVendor={handleSelectVendor} favorites={favorites} onToggleFavorite={handleToggleFavorite} />}
+            {activeTab === 'map' && <Map vendors={vendors} onSelectVendor={handleSelectVendor} />}
+            {activeTab === 'add' && <AddSpot onAddVendor={handleAddVendor} />}
+          </div>
         </main>
-        <div className="p-4 pb-6 z-20 bg-white border-t-2 border-neo-black/10 shrink-0">
+
+        {/* Floating Bottom Navigation: Absolute within the app container */}
+        <div className="absolute bottom-0 left-0 w-full z-50 bg-white border-t-2 border-neo-black p-4">
             <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
         </div>
+
+        {/* Overlays */}
         {isProfileOpen && <Profile user={currentUser} onUpdateUser={handleUpdateUser} onClose={() => setIsProfileOpen(false)} favorites={favorites} vendors={vendors} onSelectVendor={handleSelectVendor} />}
         {selectedVendor && <DetailModal vendor={selectedVendor} onClose={handleCloseModal} onAddReview={(review) => handleAddReview(selectedVendor.id, review)} isFavorite={favorites.includes(selectedVendor.id)} onToggleFavorite={() => handleToggleFavorite(selectedVendor.id)} />}
       </div>
