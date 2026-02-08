@@ -51,10 +51,25 @@ const App: React.FC = () => {
     try {
       if (!supabase) throw new Error("Mock Mode");
 
-      const { data, error } = await supabase.from('vendors').select('*');
-      if (error) throw error;
+      // 1. Fetch Vendors
+      const { data: vendorData, error: vendorError } = await supabase.from('vendors').select('*');
+      if (vendorError) throw vendorError;
       
-      const mappedVendors: Vendor[] = data.map((v: any) => ({
+      // 2. Fetch Reviews with fallback user info if join fails
+      // We try to join with users but have a safe fallback
+      const { data: reviewData, error: reviewError } = await supabase
+        .from('reviews')
+        .select(`
+          *,
+          users (
+            name,
+            avatar_url
+          )
+        `);
+      
+      const allReviews = reviewData || [];
+
+      const mappedVendors: Vendor[] = vendorData.map((v: any) => ({
         id: String(v.id),
         name: v.name,
         category: v.category || "Others",
@@ -67,10 +82,21 @@ const App: React.FC = () => {
         },
         location: v.location || "Unknown Location",
         timings: v.timings || "9am - 9pm",
-        reviews: [] 
+        reviews: allReviews
+          .filter((r: any) => String(r.vendor_id) === String(v.id))
+          .map((r: any) => ({
+            id: String(r.id),
+            user: r.users?.name || r.user_name || "Anonymous",
+            avatar: r.users?.avatar_url || r.user_avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${r.id}`,
+            text: r.text || r.comment || "",
+            rating: r.rating || 5,
+            date: r.date || "Today"
+          }))
+          .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
       }));
       setVendors(mappedVendors);
     } catch (err: any) {
+      console.error("Fetch Vendors Error:", err);
       setVendors(INITIAL_VENDORS);
     } finally {
       setIsLoading(false);
@@ -184,7 +210,14 @@ const App: React.FC = () => {
     try { await supabase.from('users').update({ favorites: newFavorites }).eq('id', currentUser.id); } catch (e) {}
   };
 
+  // AGGRESSIVE DEBUGGING VERSION OF handleAddReview
   const handleAddReview = async (vendorId: string, review: Review) => {
+    // 1. Check User
+    if (!currentUser) {
+      alert("You must be logged in to review!");
+      return;
+    }
+
     const vendor = vendors.find(v => v.id === vendorId);
     if (!vendor) return;
 
@@ -195,41 +228,41 @@ const App: React.FC = () => {
     }
 
     try {
-      const finalVendorId = isNaN(Number(vendorId)) ? vendorId : Number(vendorId);
-
-      const { data, error } = await supabase.from('reviews').insert([{
-          vendor_id: finalVendorId,
-          user_name: currentUser?.name || 'Anonymous',
-          user_avatar: currentUser?.avatarUrl || '',
-          comment: review.comment,
+      // 2. Prep Payload
+      const payload = {
+          vendor_id: vendorId,       
+          user_id: currentUser.id,    
+          text: review.text,
           rating: review.rating,
           date: new Date().toISOString().split('T')[0]
-      }]).select();
+      };
 
+      // 3. Log Payload
+      console.log("DEBUG: Sending Review Payload:", payload);
+
+      // 4. Verbose Insert
+      const { data, error } = await supabase
+        .from('reviews')
+        .insert([payload])
+        .select();
+
+      // 5. Error Trap
       if (error) {
-        alert("DB REJECTED REVIEW:\n" +
-              "Code: " + error.code + "\n" +
-              "Message: " + error.message + "\n" +
-              "Details: " + (error.details || "No further details."));
-        return;
+        console.error("Supabase Review Error:", error);
+        alert("SAVE FAILED:\nCode: " + error.code + "\nMessage: " + error.message + "\nDetails: " + (error.details || "None"));
+        return; 
       }
 
-      alert("Success! Review Saved.");
+      // 6. Success Handling
+      console.log("DEBUG: Review saved successfully:", data);
+      alert("Review Saved Successfully!");
 
-      const currentCount = vendor.reviews ? vendor.reviews.length : 0;
-      const newRating = parseFloat(((vendor.rating * currentCount + review.rating) / (currentCount + 1)).toFixed(1));
-
-      setVendors(prev => prev.map(v => {
-        if (v.id === vendorId) {
-          return { ...v, reviews: [review, ...v.reviews], rating: newRating };
-        }
-        return v;
-      }));
-
-      await supabase.from('vendors').update({ rating: newRating }).eq('id', finalVendorId);
+      // 7. Refresh immediately to show the new review
+      fetchVendors();
 
     } catch (e: any) {
-      alert("Critical Error during submission: " + e.message);
+      console.error("Critical Error during review submission:", e);
+      alert("CRITICAL ERROR:\n" + e.message);
     }
   };
 

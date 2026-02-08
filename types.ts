@@ -15,7 +15,7 @@ export interface Review {
   id: string;
   user: string;
   avatar: string;
-  comment: string;
+  text: string; // Changed from 'comment'
   rating: number;
   date: string;
   vendor_id?: string;
@@ -24,13 +24,13 @@ export interface Review {
 export interface Vendor {
   id: string;
   name: string;
-  category: Category; // Changed from 'type'
-  image_url: string; // Changed from 'imageUrl'
+  category: Category; 
+  image_url: string; 
   rating: number;
   description: string;
   reviews: Review[];
   coordinates: { x: number; y: number }; 
-  location: string; // Changed from 'address'
+  location: string; 
   timings: string;
 }
 

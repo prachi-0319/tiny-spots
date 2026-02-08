@@ -14,7 +14,14 @@ const DetailModal: React.FC<DetailModalProps> = ({ vendor, onClose, onAddReview,
   const handleSubmitReview = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newReviewText.trim()) return;
-    onAddReview({ id: Date.now().toString(), user: "You", avatar: "https://i.pravatar.cc/150?img=12", comment: newReviewText, rating: newReviewRating, date: "Just now" });
+    onAddReview({ 
+      id: Date.now().toString(), 
+      user: "You", 
+      avatar: "https://i.pravatar.cc/150?img=12", 
+      text: newReviewText, // Changed from 'comment'
+      rating: newReviewRating, 
+      date: new Date().toISOString().split('T')[0] 
+    });
     setNewReviewText('');
     setNewReviewRating(5);
   };
@@ -92,7 +99,7 @@ const DetailModal: React.FC<DetailModalProps> = ({ vendor, onClose, onAddReview,
                                 <div className="flex text-neo-orange mb-1">
                                     {[...Array(5)].map((_, i) => <Star key={i} size={10} className={i < review.rating ? "fill-current" : "text-gray-200 fill-gray-200"} />)}
                                 </div>
-                                <p className="text-xs text-gray-600 line-clamp-2">{review.comment}</p>
+                                <p className="text-xs text-gray-600 line-clamp-2">{review.text}</p>
                             </div>
                         </div>
                     ))}
