@@ -83,7 +83,7 @@ const Card: React.FC<CardProps> = ({ vendor, isTop, onSwipe, onSelect, isFavorit
       exit={{ x: x.get() < 0 ? -500 : 500, opacity: 0, transition: { duration: 0.3 } }}
       className="absolute inset-0 bg-white border-2 border-neo-black rounded-3xl shadow-hard overflow-hidden cursor-grab active:cursor-grabbing select-none flex flex-col"
     >
-      <div className="flex-[3] w-full relative overflow-hidden min-h-0 bg-gray-100">
+      <div className="flex-[3.75] w-full relative overflow-hidden min-h-0 bg-gray-100">
         <img src={vendor.image_url || "https://images.unsplash.com/photo-1555939594-58d7cb561ad1"} alt={vendor.name} className="w-full h-full object-cover pointer-events-none" />
         <div className="absolute top-4 right-4 z-10">
             <span className={`${CATEGORY_COLORS[vendor.category] || 'bg-gray-300'} px-3 py-1 rounded-full border-2 border-neo-black font-bold text-sm shadow-hard-sm`}>
@@ -91,7 +91,7 @@ const Card: React.FC<CardProps> = ({ vendor, isTop, onSwipe, onSelect, isFavorit
             </span>
         </div>
       </div>
-      <div className="flex-[2] p-4 flex flex-col justify-between items-center relative bg-white min-h-0">
+      <div className="flex-[1.25] p-4 flex flex-col justify-between items-center relative bg-white min-h-0">
         <div className="w-full">
             <div className="flex justify-between items-start mb-1">
                 <h2 className="text-2xl font-bold leading-tight mr-2 line-clamp-1 text-neo-black">{vendor.name}</h2>
@@ -111,7 +111,7 @@ const Card: React.FC<CardProps> = ({ vendor, isTop, onSwipe, onSelect, isFavorit
             </div>
         </div>
         {/* mb-8 applied for bottom clearance above the floating navbar */}
-        <button onClick={(e) => { e.stopPropagation(); onSelect(); }} className="w-auto px-6 py-2 mt-4 mb-8 bg-neo-teal text-white font-bold text-sm rounded-xl border-2 border-neo-black shadow-hard active:translate-y-[2px] active:translate-x-[2px] active:shadow-none flex items-center justify-center gap-2 transition-all shrink-0">
+        <button onClick={(e) => { e.stopPropagation(); onSelect(); }} className="w-auto px-6 py-2 mt-2 mb-2 bg-neo-teal text-white font-bold text-sm rounded-xl border-2 border-neo-black shadow-hard active:translate-y-[2px] active:translate-x-[2px] active:shadow-none flex items-center justify-center gap-2 transition-all shrink-0">
             <Info size={16} /> View Details
         </button>
       </div>

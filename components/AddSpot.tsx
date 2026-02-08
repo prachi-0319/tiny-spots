@@ -105,60 +105,6 @@ const AddSpot: React.FC<AddSpotProps> = ({ onAddVendor }) => {
           </div>
         </div>
 
-        {/* Image Handling Upgrade */}
-        <div>
-          <label className="font-bold text-lg mb-3 flex items-center gap-2"><ImageIcon size={18} /> Add a Photo</label>
-          
-          {!formData.image_url ? (
-            <div className="grid grid-cols-2 gap-4">
-              <button 
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="flex flex-col items-center justify-center p-6 bg-white border-2 border-neo-black border-dashed rounded-2xl hover:bg-stone-50 transition-colors"
-              >
-                <Upload size={32} className="mb-2 text-neo-teal" />
-                <span className="font-bold text-sm">Upload Photo</span>
-                <input 
-                  type="file" 
-                  ref={fileInputRef} 
-                  onChange={handleFileUpload} 
-                  accept="image/*" 
-                  className="hidden" 
-                />
-              </button>
-              <button 
-                type="button"
-                onClick={handleSurpriseMe}
-                disabled={isGenerating}
-                className="flex flex-col items-center justify-center p-6 bg-neo-yellow border-2 border-neo-black rounded-2xl shadow-hard hover:bg-neo-yellow/90 transition-all active:translate-y-1 active:shadow-none"
-              >
-                <Wand2 size={32} className="mb-2 text-neo-black" />
-                <span className="font-bold text-sm">{isGenerating ? 'Cooking...' : 'Surprise Me'}</span>
-              </button>
-            </div>
-          ) : (
-            <div className="relative w-full aspect-video border-2 border-neo-black rounded-2xl overflow-hidden shadow-hard">
-                <img 
-                  src={formData.image_url} 
-                  alt="Spot preview" 
-                  className={`w-full h-full object-cover transition-opacity duration-300 ${isGenerating ? 'opacity-50' : 'opacity-100'}`} 
-                />
-                <button 
-                  type="button" 
-                  onClick={removeImage} 
-                  className="absolute top-2 right-2 p-1 bg-white border-2 border-neo-black rounded-full shadow-hard-sm hover:bg-red-50"
-                >
-                  <X size={20} />
-                </button>
-                {isGenerating && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/10">
-                        <div className="w-8 h-8 border-4 border-white border-t-neo-black rounded-full animate-spin"></div>
-                    </div>
-                )}
-            </div>
-          )}
-        </div>
-
         {/* Location & Timings */}
         <div className="grid grid-cols-1 gap-4">
             <div>
@@ -196,6 +142,61 @@ const AddSpot: React.FC<AddSpotProps> = ({ onAddVendor }) => {
             rows={3} 
             className="w-full p-3 bg-white border-2 border-neo-black rounded-xl outline-none resize-none"
           />
+        </div>
+
+
+        {/* Image Handling Upgrade */}
+        <div>
+          <label className="font-bold text-lg mb-3 flex items-center gap-2"><ImageIcon size={18} /> Add a Photo</label>
+          
+          {!formData.image_url ? (
+            <div className="grid grid-cols-2 gap-4">
+              <button 
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex flex-col items-center justify-center p-3 bg-white border-2 border-neo-black border-dashed rounded-2xl hover:bg-stone-50 transition-colors"
+              >
+                <Upload size={24} className="mb-2 text-neo-teal" />
+                <span className="font-bold text-sm">Upload Photo</span>
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleFileUpload} 
+                  accept="image/*" 
+                  className="hidden" 
+                />
+              </button>
+              <button 
+                type="button"
+                onClick={handleSurpriseMe}
+                disabled={isGenerating}
+                className="flex flex-col items-center justify-center p-3 bg-neo-yellow border-2 border-neo-black rounded-2xl shadow-hard hover:bg-neo-yellow/90 transition-all active:translate-y-1 active:shadow-none"
+              >
+                <Wand2 size={24} className="mb-2 text-neo-black" />
+                <span className="font-bold text-sm">{isGenerating ? 'Cooking...' : 'Surprise Me'}</span>
+              </button>
+            </div>
+          ) : (
+            <div className="relative w-full aspect-video border-2 border-neo-black rounded-2xl overflow-hidden shadow-hard">
+                <img 
+                  src={formData.image_url} 
+                  alt="Spot preview" 
+                  className={`w-full h-full object-cover transition-opacity duration-300 ${isGenerating ? 'opacity-50' : 'opacity-100'}`} 
+                />
+                <button 
+                  type="button" 
+                  onClick={removeImage} 
+                  className="absolute top-2 right-2 p-1 bg-white border-2 border-neo-black rounded-full shadow-hard-sm hover:bg-red-50"
+                >
+                  <X size={20} />
+                </button>
+                {isGenerating && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+                        <div className="w-8 h-8 border-4 border-white border-t-neo-black rounded-full animate-spin"></div>
+                    </div>
+                )}
+            </div>
+          )}
         </div>
 
         {/* Final Submit */}

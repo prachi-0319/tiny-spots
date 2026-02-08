@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { X, Heart, MapPin, Edit2, Check, Star } from 'lucide-react';
 import { Vendor, User } from '../types';
@@ -22,7 +22,12 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpdateUser, onClose, favorite
     email: user.email
   });
 
-  const favoriteVendors = vendors.filter(v => favorites.includes(v.id));
+  // FIX: Use robust comparison for ID types (Number vs String) to ensure list displays correctly
+  const favoriteVendors = useMemo(() => {
+    return vendors.filter(v => 
+      favorites.some(favId => String(favId) === String(v.id))
+    );
+  }, [vendors, favorites]);
 
   const handleSave = () => {
     onUpdateUser({ ...user, ...formData });
@@ -55,14 +60,20 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpdateUser, onClose, favorite
                      <input className="w-full text-center text-sm border-b-2 border-neo-black focus:outline-none bg-white text-neo-black" value={formData.pronouns} onChange={(e) => setFormData({...formData, pronouns: e.target.value})} />
                 </div>
             ) : (
-                <>
-                    <h3 className="text-xl font-bold">{user.name}</h3>
+                <div className="text-center">
+                    <h3 className="text-xl font-bold text-neo-black">{user.name}</h3>
                     <p className="text-gray-500 font-medium text-sm">{user.pronouns}</p>
-                </>
+                    {/* RESTORED: Email address field */}
+                    <p className="text-stone-500 text-xs mt-1 lowercase font-medium">{user.email}</p>
+                </div>
             )}
         </div>
 
-        <h3 className="text-xl font-bold mb-4 flex items-center gap-2"><Heart className="fill-red-500 text-red-500" size={24} /> Favorites ({favorites.length})</h3>
+        {/* HEADER FIX: Always use calculated favoriteVendors.length for consistency */}
+        <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+            <Heart className="fill-red-500 text-red-500" size={24} /> 
+            Favorites ({favoriteVendors.length})
+        </h3>
 
         {favoriteVendors.length === 0 ? (
             <div className="text-center py-10 bg-gray-100 rounded-xl border-2 border-dashed border-gray-300">
@@ -71,8 +82,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpdateUser, onClose, favorite
         ) : (
             <div className="space-y-4 pb-20">
                 {favoriteVendors.map(vendor => (
-                    <div key={vendor.id} onClick={() => onSelectVendor(vendor.id)} className="bg-white border-2 border-neo-black rounded-xl p-3 shadow-hard-sm flex gap-3 cursor-pointer hover:bg-gray-50 transition-all">
-                        {/* FIXED image_url reference */}
+                    <div key={vendor.id} onClick={() => { onSelectVendor(vendor.id); onClose(); }} className="bg-white border-2 border-neo-black rounded-xl p-3 shadow-hard-sm flex gap-3 cursor-pointer hover:bg-gray-50 transition-all">
                         <img src={vendor.image_url} alt={vendor.name} className="w-20 h-20 rounded-lg object-cover border-2 border-neo-black shrink-0" />
                         <div className="flex-1 min-w-0 flex flex-col justify-center">
                             <div className="flex justify-between items-start">
